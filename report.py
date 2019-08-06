@@ -24,11 +24,16 @@ def main():
        for line in fp:
            print(line)
            args=line.strip().split('\t')
+           if args.__len__() < 3:
+               continue
            inum=args[1].split(":")[0]
            fileName=getFileName(inum, d)
            if fileName is '':
                continue
-           fsblk=args[2].split("=")[1]
+           fsblk_parts=args[2].split("=")
+           if fsblk_parts.__len__() != 2:
+               continue
+           fsblk = fsblk_parts[1]
            b.setdefault(inum, []).append(fsblk)
 
    for key, val in d.items():
