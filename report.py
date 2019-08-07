@@ -4,9 +4,6 @@ import subprocess
 import sys
 import os
 import os.path
-from collections import namedtuple
-EventData = namedtuple("EventData", "tid ts inode_num fs_blk blk_size is_readahead")
-
 class EventData:
     def __init__(self, tid, ts, inode_num, fs_blk, blk_size, is_readahead):
         self.tid = tid
@@ -45,9 +42,25 @@ def getRangeOutput(sub_lists):
     output = list()
     for sub_list in sub_lists:
         if sub_list.__len__() == 1:
-            str = sub_list[0]
+            str = "%s-%d"%(sub_list[0].tid, sub_list[0].fs_blk)
         else:
-            str = "%d-%d" %(sub_list[0].fs_blk, sub_list[0].fs_blk+sub_list.__len__()-1) 
+            prev_tid=sub_list[0].tid
+            start_fsblk=sub_list[0].fs_blk
+            str=""
+            for event in sub_list:
+                if prev_tid != event.tid:
+                    content="%s:%d-%d"%(str,prev_tid, start_fsblk, event.fs_blk-1)
+                    if str != "":
+                        str = "%s,%s" %(str,content)
+                    else:
+                        str = content 
+                    prev_tid=event.tid
+                    start_fsblk=event.fs_blk
+            content = "%s,%d-%d" %(str,prev_tid, start_fsblk, sub_list[0].fs_blk+sub_list.__len__()-1)
+            if str != "":
+                str = "%s,%s" %(str,content)
+            else:
+                str = content 
         output.append(str)
     return output
 
@@ -94,13 +107,13 @@ def main():
            args=line.strip().split(" ")
            if args.__len__() < 10 or args.__len__() > 11 or line.find("FSBLK")==-1 :
                continue
-           data=EventData(args[0], args[3], args[7].split(":")[0].strip(), args[8].split("=")[1].strip(), args[9].split("=")[1].strip(), False)
+           data=EventData(args[0], args[3], int(args[7].split(":")[0].strip()), int(args[8].split("=")[1].strip()), int(args[9].split("=")[1].strip()), False)
            if args.__len__() == 10:
                data.is_readahead= args[10]=="[RA]"
            inode_events.setdefault(data.inode_num, []).append(data)
     
     for inum in inode_events:
-       fileName=getFileName(data.inode_num, file_name_cache)
+       fileName=getFileName(inum, file_name_cache)
        if fileName == '':
            continue
        range_op=getRangeOutput(get_sub_list(inode_events[inum]))
