@@ -97,16 +97,14 @@ def main():
            data=EventData(args[0], args[3], args[7].split(":")[0].strip(), args[8].split("=")[1].strip(), args[9].split("=")[1].strip(), False)
            if args.__len__() == 10:
                data.is_readahead= args[10]=="[RA]"
-
-           fileName=getFileName(data.inode_num, file_name_cache)
            inode_events.setdefault(data.inode_num, []).append(data)
     
-    for inum in d:
-       file=d[inum]
-       if file == '':
+    for inum in inode_events:
+       fileName=getFileName(data.inode_num, file_name_cache)
+       if fileName == '':
            continue
        range_op=getRangeOutput(get_sub_list(inode_events[inum]))
-       print(shorten_path(file, 2), range_op)
+       print(shorten_path(fileName, 2), range_op)
 
 if __name__ == '__main__':
     main()
