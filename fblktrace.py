@@ -40,6 +40,18 @@ int fblktrace_ext4_file_open(struct pt_regs *ctx, struct inode * inode,
 	return 0;
 }
 
+// define output data structure in C
+struct data_t {
+    u32 pid;
+    u64 ts;
+	u32 inode;
+	u32 fblk;
+	u32 bsize;
+	bool is_readahead;
+    char comm[TASK_COMM_LEN];
+};
+BPF_PERF_OUTPUT(events);
+
 int fblktrace_read_pages(struct pt_regs *ctx, struct address_space *mapping,
 			 struct list_head *pages, struct page *page,
 			 unsigned nr_pages, bool is_readahead)
@@ -49,6 +61,7 @@ int fblktrace_read_pages(struct pt_regs *ctx, struct address_space *mapping,
 	unsigned blkbits = mapping->host->i_blkbits;
 	unsigned long ino = mapping->host->i_ino;;
  	u64 block_in_file;
+	struct data_t data; 
 
 	#pragma unroll
 	for (i = 0; i < 32 && nr_pages--; i++) {
@@ -58,12 +71,18 @@ int fblktrace_read_pages(struct pt_regs *ctx, struct address_space *mapping,
 		}
 		index = page->index;
 		block_in_file = (unsigned long) index << (12 - blkbits);
-		if (!is_readahead)
-			bpf_trace_printk("inode:%ld FSBLK=%lu BSIZ=%lu\\n",
-					 ino, index, 1<<blkbits);
-		else
-			bpf_trace_printk("inode:%ld FSBLK=%lu BSIZ=%lu [RA]\\n",
-					 ino, index, 1<<blkbits);
+		
+		data = {};
+		data.pid = bpf_get_current_pid_tgid();
+		data.ts = bpf_ktime_get_ns();
+		data.inode=ino
+		data.fsblk=index
+		data.bsize=1<<blkbits
+		data.isReadAhead = is_readahead
+		
+		bpf_get_current_comm(&data.comm, sizeof(data.comm));
+		
+		events.perf_submit(ctx, &data, sizeof(data));
 	}
 	return 0;
 }
@@ -82,22 +101,18 @@ b = BPF(text=bpf_text)
 b.attach_kprobe(event="ext4_mpage_readpages", fn_name="fblktrace_read_pages")
 #b.attach_kretprobe(event="ext4_file_open",  fn_name="fblktrace_ext4_file_open");
 
-# format output
+# process event
 start = 0
-#d = dict()
-while 1:
-    (task, pid, cpu, flags, ts, ms) = b.trace_fields()
+def print_event(cpu, data, size):
+    global start
+    event = b["events"].event(data)
     if start == 0:
-        start = ts
-    ts = ts - start
-    #if args.__len__() < 3:
-    #    continue
-	#inode=args[0].split(':')
-	#fsblk=args[1].split(':')
-#	fname=getFileName(inode, d)
-    print("%.2f s: %s %s" % (ts, task, ms))
+            start = event.ts
+    time_s = (float(event.ts - start)) / 1000000000
+    print("%-18.9f %-16s %-6d %s" % (time_s, event.comm, event.pid,
+        "Hello, perf_output!"))
 
-#print 'printing...'
-#while True:
-#	b.
-#    b.trace_print();
+# loop with callback to print_event
+b["events"].open_perf_buffer(print_event)
+while 1:
+    b.perf_buffer_poll()
