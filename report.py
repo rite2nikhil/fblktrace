@@ -27,7 +27,7 @@ def getFileName(inum, dict):
         
 def split_list(n):
     """will return the list index"""
-    return [(x+1) for x,y in zip(n, n[1:]) if y-x != 1]
+    return [(x+1) for x,y in zip(n, n[1:]) if y.fs_blk-x.fs_blk != 1]
 
 def get_sub_list(my_list):
     """will split the list base on the index"""
@@ -47,7 +47,7 @@ def getRangeOutput(sub_lists):
         if sub_list.__len__() == 1:
             str = sub_list[0]
         else:
-            str = "%d-%d" %(sub_list[0], sub_list[0]+sub_list.__len__()-1) 
+            str = "%d-%d" %(sub_list[0].fs_blk, sub_list[0].fs_blk+sub_list.__len__()-1) 
         output.append(str)
     return output
 
@@ -84,8 +84,8 @@ def main_old():
 #  ReplicaFetcherT-9311  [003] d... 91189.058312: : => inode: 135014595: FSBLK=35 BSIZ=4096 [RA]
 def main():
     filepath = sys.argv[1]
-    d = dict()
-    b = dict()
+    file_name_cache = dict()
+    inode_events = dict()
     if not os.path.isfile(filepath):
        print("File path {} does not exist. Exiting...".format(filepath))
        sys.exit()
@@ -98,7 +98,15 @@ def main():
            if args.__len__() == 10:
                data.is_readahead= args[10]=="[RA]"
 
-           print(data)
+           fileName=getFileName(data.inode_num, file_name_cache)
+           inode_events.setdefault(data.inode_num, []).append(data)
+    
+    for inum in d:
+       file=d[inum]
+       if file == '':
+           continue
+       range_op=getRangeOutput(get_sub_list(inode_events[inum]))
+       print(shorten_path(file, 2), range_op)
 
 if __name__ == '__main__':
     main()
