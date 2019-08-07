@@ -82,7 +82,7 @@ while 1:
     if start == 0:
         start = ts
     ts = ts - start
-    print("At time %.2f s: multiple syncs detected, last %s ms ago" % (ts, ms))
+    print("%.2f s:  %s" % (ts, ms))
 
 #print 'printing...'
 #while True:
