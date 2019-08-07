@@ -55,7 +55,7 @@ def main():
        file=d[inum]
        if file == '':
            continue
-       print(os.path.relpath(file, "/var/lib/kubelet/pods/", get_sub_list(b[inum])))
+       print(os.path.relpath(file, "/var/lib/kubelet/pods/"), get_sub_list(b[inum]))
 
 if __name__ == '__main__':
     main()
