@@ -36,7 +36,7 @@ def getRangeOutput(sub_lists):
     for sub_list in sub_lists:
         if sub_list.__len__() == 1:
             str = sub_list[0]
-        else 
+        else:
             str = "%d-%d" %(sub_list[0], sub_list[0]+sub_list.__len__()-1) 
         output.append(str)
     return output
