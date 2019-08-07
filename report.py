@@ -6,7 +6,7 @@ import os
 
 def getFileName(inum, dict): 
     if not inum in dict: 
-        cmd = "find /Users/nikhil/ -inum %s" % (inum)
+        cmd = "find /var/lib/kubelet/pods/ -inum %s" % (inum)
         dict[inum]=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.read().rstrip()
     return dict[inum]
         
@@ -28,8 +28,9 @@ def main():
                continue
            inum=args[1].split(":")[0]
            fileName=getFileName(inum, d)
-           if fileName is '':
+           if fileName == '':
                continue
+           print(inum, d[inum])
            fsblk_parts=args[2].split("=")
            if fsblk_parts.__len__() != 2:
                continue
