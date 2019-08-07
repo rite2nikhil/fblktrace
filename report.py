@@ -7,7 +7,7 @@ import os.path
 
 def shorten_path(file_path, length):
     parts=file_path.split("/")
-    return "/".join(parts[parts.len()-length:])
+    return "/".join(parts[len(parts)-1-length:])
 
 def getFileName(inum, dict): 
     if not inum in dict: 
