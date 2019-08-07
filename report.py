@@ -3,6 +3,10 @@
 import subprocess
 import sys
 import os
+from pathlib import Path
+
+def shorten_path(file_path, length):
+    return Path(*Path(file_path).parts[-length:])
 
 def getFileName(inum, dict): 
     if not inum in dict: 
@@ -49,13 +53,13 @@ def main():
            fsblk_parts=args[2].split("=")
            if fsblk_parts.__len__() != 2:
                continue
-           fsblk = fsblk_parts[1]
+           fsblk = int(fsblk_parts[1])
            b.setdefault(inum, []).append(fsblk)
    for inum in d:
        file=d[inum]
        if file == '':
            continue
-       print(os.path.relpath(file, "/var/lib/kubelet/pods/"), get_sub_list(b[inum]))
+       print(shorten_path(file, 3), get_sub_list(b[inum]))
 
 if __name__ == '__main__':
     main()
