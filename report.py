@@ -51,15 +51,14 @@ def main():
                continue
            fsblk = fsblk_parts[1]
            b.setdefault(inum, []).append(fsblk)
-
    for inum in d:
        file=d[inum]
        if file == '':
            continue
-        print(os.path.relpath(file, "/var/lib/kubelet/pods/"), get_sub_list(b[inum]))
-    
+       print(os.path.relpath(file, "/var/lib/kubelet/pods/", get_sub_list(b[inum])))
+
 if __name__ == '__main__':
-   main()
+    main()
 
 
 #cmd = "find /var/lib/kubelet/pods/ -inum $i | rev | cut -d'/' -f-3 | rev"
