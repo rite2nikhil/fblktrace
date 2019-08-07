@@ -5,12 +5,13 @@ import sys
 import os
 import os.path
 class EventData:
-    def __init__(self, tid, ts, inode_num, fs_blk, blk_size, is_readahead):
+    def __init__(self, tid, ts, inode_num, fs_blk, blk_size, is_readahead, seq_id):
         self.tid = tid
         self.inode_num=inode_num
         self.fs_blk=fs_blk
         self.blk_size=blk_size
         self.is_readahead=is_readahead 
+        self.seq_id=seq_id
 
 def shorten_path(file_path, length):
     parts=file_path.split("/")
@@ -24,7 +25,7 @@ def getFileName(inum, dict):
         
 def split_list(n):
     """will return the list index"""
-    return [(x+1) for x,y in zip(n, n[1:]) if y.fs_blk-x.fs_blk != 1]
+    return [(x.seq_id+1) for x,y in zip(n, n[1:]) if y.fs_blk-x.fs_blk != 1]
 
 def get_sub_list(my_list):
     """will split the list base on the index"""
@@ -49,14 +50,14 @@ def getRangeOutput(sub_lists):
             str=""
             for event in sub_list:
                 if prev_tid != event.tid:
-                    content="%s:%d-%d"%(str,prev_tid, start_fsblk, event.fs_blk-1)
+                    content="%s:%d-%d"%(prev_tid, start_fsblk, event.fs_blk-1)
                     if str != "":
                         str = "%s,%s" %(str,content)
                     else:
                         str = content 
                     prev_tid=event.tid
                     start_fsblk=event.fs_blk
-            content = "%s,%d-%d" %(str,prev_tid, start_fsblk, sub_list[0].fs_blk+sub_list.__len__()-1)
+            content = "%s:%d-%d" %(prev_tid, start_fsblk, sub_list[0].fs_blk+sub_list.__len__()-1)
             if str != "":
                 str = "%s,%s" %(str,content)
             else:
@@ -110,6 +111,7 @@ def main():
            data=EventData(args[0], args[3], int(args[7].split(":")[0].strip()), int(args[8].split("=")[1].strip()), int(args[9].split("=")[1].strip()), False)
            if args.__len__() == 10:
                data.is_readahead= args[10]=="[RA]"
+           data.seq_id=len(inode_events[data.inode_num])
            inode_events.setdefault(data.inode_num, []).append(data)
     
     for inum in inode_events:
