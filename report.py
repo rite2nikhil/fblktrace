@@ -60,7 +60,7 @@ def main():
        file=d[inum]
        if file == '':
            continue
-       print(shorten_path(file, 3), get_sub_list(b[inum]))
+       print(shorten_path(file, 2), get_sub_list(b[inum]))
 
 if __name__ == '__main__':
     main()
