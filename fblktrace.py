@@ -16,6 +16,7 @@ bpf_text = """
 #include <uapi/linux/ptrace.h>
 #include <linux/fs.h>
 #include <linux/kernel.h>
+#include <linux/sched.h>
 
 #define PAGE_SHIFT 12
 
@@ -75,10 +76,10 @@ int fblktrace_read_pages(struct pt_regs *ctx, struct address_space *mapping,
 		data = {};
 		data.pid = bpf_get_current_pid_tgid();
 		data.ts = bpf_ktime_get_ns();
-		data.inode=ino
-		data.fsblk=index
-		data.bsize=1<<blkbits
-		data.isReadAhead = is_readahead
+		data.inode=ino;
+		data.fsblk=index;
+		data.bsize=1<<blkbits;
+		data.isReadAhead=is_readahead;
 		
 		bpf_get_current_comm(&data.comm, sizeof(data.comm));
 		
