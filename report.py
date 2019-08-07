@@ -3,10 +3,11 @@
 import subprocess
 import sys
 import os
-from pathlib import Path
+import os.path
 
 def shorten_path(file_path, length):
-    return Path(*Path(file_path).parts[-length:])
+    parts=file_path.split("/")
+    return "/".join(parts[parts.len()-length:])
 
 def getFileName(inum, dict): 
     if not inum in dict: 
