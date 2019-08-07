@@ -91,9 +91,10 @@ def main():
        sys.exit()
     with open(filepath) as fp:
        for line in fp:
-           #print(line)
+           print(line)
            args=line.strip().split(" ")
-           if args.__len__() < 10:
+           print(args)
+           if args.__len__() < 10 || args.__len__() > 11 :
                continue
            data=EventData(args[0], args[3], args[8].split(":")[0].strip(), args[9].split("=")[1].strip(), args[10].split("=")[1].strip(), False)
            if args.__len__() == 11:
