@@ -38,7 +38,8 @@ def main():
            b.setdefault(inum, []).append(fsblk)
 
    for key, val in d.items():
-       if val is not '':
+       if val != '':
+           print(key)
            print(val, b[key])
     
 if __name__ == '__main__':
