@@ -1,14 +1,6 @@
 #!/usr/bin/python
-# @lint-avoid-python-3-compatibility-imports
-#
-# fblktrace.py  Trace page cache misses
-#
-# USAGE: fblktrace.py
-#
-# Copyright 2018 Collabora Ltd.
-# Licensed under the Apache License, Version 2.0 (the "License")
-#
-# Author: Gabriel Krisman Bertazi  -  2018-09-20
+# copied from https://gitlab.collabora.com/krisman/bcc/raw/master/tools/fblktrace.py 
+# mofified to use perf_output
 
 from bcc import BPF
 
@@ -62,7 +54,6 @@ int fblktrace_read_pages(struct pt_regs *ctx, struct address_space *mapping,
 	unsigned blkbits = mapping->host->i_blkbits;
 	unsigned long ino = mapping->host->i_ino;;
  	u64 block_in_file;
-	struct data_t data; 
 
 	#pragma unroll
 	for (i = 0; i < 32 && nr_pages--; i++) {
@@ -73,13 +64,13 @@ int fblktrace_read_pages(struct pt_regs *ctx, struct address_space *mapping,
 		index = page->index;
 		block_in_file = (unsigned long) index << (12 - blkbits);
 		
-		data = {};
+		struct data_t data = {};
 		data.pid = bpf_get_current_pid_tgid();
 		data.ts = bpf_ktime_get_ns();
 		data.inode=ino;
 		data.fsblk=index;
 		data.bsize=1<<blkbits;
-		data.isReadAhead=is_readahead;
+		data.is_readahead=is_readahead;
 		
 		bpf_get_current_comm(&data.comm, sizeof(data.comm));
 		
