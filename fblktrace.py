@@ -36,7 +36,7 @@ int fblktrace_ext4_file_open(struct pt_regs *ctx, struct inode * inode,
 
 	bpf_probe_read(lname, 20, (void*)qs.name);
 
-	bpf_trace_printk("=> Open inode %ld: fname = %s\\n", ino, lname);
+	bpf_trace_printk("Open inode %ld:fname = %s\\n", ino, lname);
 	return 0;
 }
 
@@ -59,10 +59,10 @@ int fblktrace_read_pages(struct pt_regs *ctx, struct address_space *mapping,
 		index = page->index;
 		block_in_file = (unsigned long) index << (12 - blkbits);
 		if (!is_readahead)
-			bpf_trace_printk("=> inode: %ld: FSBLK=%lu BSIZ=%lu\\n",
+			bpf_trace_printk("inode:%ld FSBLK=%lu BSIZ=%lu\\n",
 					 ino, index, 1<<blkbits);
 		else
-			bpf_trace_printk("=> inode: %ld: FSBLK=%lu BSIZ=%lu [RA]\\n",
+			bpf_trace_printk("inode:%ld FSBLK=%lu BSIZ=%lu [RA]\\n",
 					 ino, index, 1<<blkbits);
 	}
 	return 0;
@@ -70,19 +70,32 @@ int fblktrace_read_pages(struct pt_regs *ctx, struct address_space *mapping,
 
 """
 
-b = BPF(text=bpf_text)
+#
+#def getFileName(inum, dict): 
+#    if not inum in dict: 
+#        cmd = "find /var/lib/kubelet/pods/ -inum %s" % (inum)
+#        dict[inum]=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.read().rstrip()
+#    return dict[inum]
+#
 
-b.attach_kprobe(event="ext4_mpage_readpages", fn_name="fblktrace_read_pages");
-b.attach_kretprobe(event="ext4_file_open",  fn_name="fblktrace_ext4_file_open");
+b = BPF(text=bpf_text)
+b.attach_kprobe(event="ext4_mpage_readpages", fn_name="fblktrace_read_pages")
+#b.attach_kretprobe(event="ext4_file_open",  fn_name="fblktrace_ext4_file_open");
 
 # format output
 start = 0
+#d = dict()
 while 1:
     (task, pid, cpu, flags, ts, ms) = b.trace_fields()
     if start == 0:
         start = ts
     ts = ts - start
-    print("%.2f s:  %s" % (ts, ms))
+    #if args.__len__() < 3:
+    #    continue
+	#inode=args[0].split(':')
+	#fsblk=args[1].split(':')
+#	fname=getFileName(inode, d)
+    print("%.2f s: %s %s" % (ts, task, ms))
 
 #print 'printing...'
 #while True:
