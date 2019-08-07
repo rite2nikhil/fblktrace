@@ -4,6 +4,16 @@ import subprocess
 import sys
 import os
 import os.path
+from collections import namedtuple
+EventData = namedtuple("EventData", "tid ts inode_num fs_blk blk_size is_readahead")
+
+class EventData:
+    def __init__(self, tid, ts, inode_num, fs_blk, blk_size, is_readahead):
+        self.tid = tid
+        self.inode_num=inode_num
+        self.fs_blk=fs_blk
+        self.blk_size=blk_size
+        self.is_readahead=is_readahead 
 
 def shorten_path(file_path, length):
     parts=file_path.split("/")
@@ -41,7 +51,7 @@ def getRangeOutput(sub_lists):
         output.append(str)
     return output
 
-def main():
+def main_old():
    filepath = sys.argv[1]
    d = dict()
    b = dict()
@@ -70,6 +80,26 @@ def main():
            continue
        range_op=getRangeOutput(get_sub_list(b[inum]))
        print(shorten_path(file, 2), range_op)
+
+#  ReplicaFetcherT-9311  [003] d... 91189.058312: : => inode: 135014595: FSBLK=35 BSIZ=4096 [RA]
+def main():
+    filepath = sys.argv[1]
+    d = dict()
+    b = dict()
+    if not os.path.isfile(filepath):
+       print("File path {} does not exist. Exiting...".format(filepath))
+       sys.exit()
+    with open(filepath) as fp:
+       for line in fp:
+           #print(line)
+           args=line.strip().split(" ")
+           if args.__len__() < 10:
+               continue
+           data=EventData(args[0], args[3], args[8].split(":")[0].strip(), args[9].split("=")[1].strip(), args[10].split("=")[1].strip(), False)
+           if args.__len__() == 11:
+               data.is_readahead= args[11]=="[RA]"
+
+           print(data)
 
 if __name__ == '__main__':
     main()
