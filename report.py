@@ -31,6 +31,15 @@ def get_sub_list(my_list):
     output.append([ x for x in my_list[prev:]])
     return output
 
+def getRangeOutput(sub_lists):
+    output = list()
+    for sub_list in sub_lists:
+        if sub_list.__len__() == 1:
+            str = sub_list[0]
+        else 
+            str = "%d-%d" %(sub_list[0], sub_list[0]+sub_list.__len__()-1) 
+        output.append(str)
+    return output
 
 def main():
    filepath = sys.argv[1]
@@ -50,7 +59,6 @@ def main():
            fileName=getFileName(inum, d)
            if fileName == '':
                continue
-           #print(inum, d[inum])
            fsblk_parts=args[2].split("=")
            if fsblk_parts.__len__() != 2:
                continue
@@ -60,20 +68,10 @@ def main():
        file=d[inum]
        if file == '':
            continue
-       print(shorten_path(file, 2), get_sub_list(b[inum]))
+       range_op=getRangeOutput(get_sub_list(b[inum]))
+       print(shorten_path(file, 2), range_op)
 
 if __name__ == '__main__':
     main()
 
-
-#cmd = "find /var/lib/kubelet/pods/ -inum $i | rev | cut -d'/' -f-3 | rev"
-#i=3114014
-#f=getFileName(i, d)
-#print(f)
-#f=getFileName(i, d)  
-#print(f)
-#returned_output=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.read()
-
-# using decode() function to convert byte string to string
-#print('File is:', d[i].decode("utf-8"))
 
