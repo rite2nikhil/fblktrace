@@ -91,14 +91,12 @@ def main():
        sys.exit()
     with open(filepath) as fp:
        for line in fp:
-           print(line)
            args=line.strip().split(" ")
-           print(args)
-           if args.__len__() < 10 || args.__len__() > 11 :
+           if args.__len__() < 10 or args.__len__() > 11 or line.find("FSBLK")==-1 :
                continue
-           data=EventData(args[0], args[3], args[8].split(":")[0].strip(), args[9].split("=")[1].strip(), args[10].split("=")[1].strip(), False)
-           if args.__len__() == 11:
-               data.is_readahead= args[11]=="[RA]"
+           data=EventData(args[0], args[3], args[7].split(":")[0].strip(), args[8].split("=")[1].strip(), args[9].split("=")[1].strip(), False)
+           if args.__len__() == 10:
+               data.is_readahead= args[10]=="[RA]"
 
            print(data)
 
