@@ -56,7 +56,7 @@ def get_inum_output(events):
 def get_range_output(sub_lists):
     output = list()
     for sub_list in sub_lists:
-        if sub_list.__len__() == 1:
+        if sub_list.__len__() == 0:
             continue
         elif sub_list.__len__() == 1:
             str = "%d"%(sub_list[0])
