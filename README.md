@@ -1,12 +1,14 @@
 # fblktrace
 
+The tool help report file system cache miss i/o block device using BPF tracing.  
+
 1. Setup 
 
 ```sh
 sudo bash -c "printf \"deb http://http.us.debian.org/debian unstable main non-free contrib\ndeb-src http://http.us.debian.org/debian unstable main non-free contrib\" >> /etc/apt/sources.list"
 sudo apt update 
 sudo apt install bpfcc-tools -y
-wget https://gitlab.collabora.com/krisman/bcc/raw/master/tools/fblktrace.py 
+wget https://raw.githubusercontent.com/rite2nikhil/fblktrace/master/fblktrace.py
 wget https://raw.githubusercontent.com/rite2nikhil/fblktrace/master/report.py
 ```
 
