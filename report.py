@@ -57,6 +57,8 @@ def get_range_output(sub_lists):
     output = list()
     for sub_list in sub_lists:
         if sub_list.__len__() == 1:
+            continue
+        elif sub_list.__len__() == 1:
             str = "%d"%(sub_list[0])
         else:
             str="%d-%d"%(sub_list[0], sub_list[sub_list.__len__()-1])
@@ -74,10 +76,10 @@ def main():
     with open(filepath) as fp:
        for line in fp:
            args=line.strip().split(" ")
-           if args.__len__() < 11 or args.__len__() > 12 or line.find("FSBLK")==-1 :
+           if args.__len__() < 10 or args.__len__() > 11 or line.find("FSBLK")==-1 :
                continue
-           data=EventData(args[0], args[4], int(args[8].split(":")[0].strip()), int(args[9].split("=")[1].strip()), int(args[10].split("=")[1].strip()), False)
-           if args.__len__() == 12:
+           data=EventData(args[0], args[3], int(args[7].split(":")[0].strip()), int(args[8].split("=")[1].strip()), int(args[9].split("=")[1].strip()), False)
+           if args.__len__() == 11:
                data.is_readahead= args[11]=="[RA]"
            inode_events.setdefault(data.inode_num, []).append(data)
     
