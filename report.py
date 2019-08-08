@@ -80,7 +80,7 @@ def main():
                continue
            data=EventData(args[0], args[3], int(args[7].split(":")[0].strip()), int(args[8].split("=")[1].strip()), int(args[9].split("=")[1].strip()), False)
            if args.__len__() == 11:
-               data.is_readahead= args[11]=="[RA]"
+               data.is_readahead= args[10]=="[RA]"
            inode_events.setdefault(data.inode_num, []).append(data)
     
     for inum in inode_events:
